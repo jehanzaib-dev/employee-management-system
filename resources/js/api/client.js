@@ -43,8 +43,8 @@ export async function deleteDepartment(id) {
     return client.delete(`/api/departments/${id}`);
 }
 
-export async function fetchEmployees() {
-    return client.get('/api/employees');
+export async function fetchEmployees(params = {}) {
+    return client.get('/api/employees', { params });
 }
 
 export async function fetchEmployee(id) {

@@ -4,20 +4,36 @@ import { deleteEmployee, fetchEmployees } from '../../api/client';
 
 export default function EmployeeList() {
     const [employees, setEmployees] = useState([]);
+    const [meta, setMeta] = useState(null);
+    const [search, setSearch] = useState('');
+    const [page, setPage] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
 
     useEffect(() => {
-        loadEmployees();
-    }, []);
+        const timeout = setTimeout(() => {
+            loadEmployees();
+        }, 350);
+
+        return () => clearTimeout(timeout);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search, page]);
 
     function loadEmployees() {
         setIsLoading(true);
 
-        fetchEmployees()
-            .then((response) => setEmployees(response.data))
+        fetchEmployees({ search, page })
+            .then((response) => {
+                setEmployees(response.data.data);
+                setMeta(response.data);
+            })
             .catch(() => setError('Failed to load employees.'))
             .finally(() => setIsLoading(false));
+    }
+
+    function handleSearchChange(event) {
+        setSearch(event.target.value);
+        setPage(1);
     }
 
     async function handleDelete(employee) {
@@ -27,7 +43,7 @@ export default function EmployeeList() {
 
         try {
             await deleteEmployee(employee.id);
-            setEmployees((current) => current.filter((item) => item.id !== employee.id));
+            loadEmployees();
         } catch {
             setError('Failed to delete employee.');
         }
@@ -44,48 +60,89 @@ export default function EmployeeList() {
 
             {error && <div className="form-error">{error}</div>}
 
+            <div className="search-bar">
+                <input
+                    type="search"
+                    placeholder="Search by name, email, or job title…"
+                    value={search}
+                    onChange={handleSearchChange}
+                />
+            </div>
+
             {isLoading ? (
                 <p>Loading…</p>
+            ) : meta?.total === 0 ? (
+                <p>No employees found.</p>
             ) : (
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Department</th>
-                            <th>Job Title</th>
-                            <th>Manager</th>
-                            <th>Status</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {employees.map((employee) => (
-                            <tr key={employee.id}>
-                                <td>
-                                    {employee.first_name} {employee.last_name}
-                                </td>
-                                <td>{employee.department?.name}</td>
-                                <td>{employee.job_title}</td>
-                                <td>
-                                    {employee.manager
-                                        ? `${employee.manager.first_name} ${employee.manager.last_name}`
-                                        : '—'}
-                                </td>
-                                <td>
-                                    <span className={`badge badge-${employee.status}`}>
-                                        {employee.status.replace('_', ' ')}
-                                    </span>
-                                </td>
-                                <td className="table-actions">
-                                    <Link to={`/employees/${employee.id}/edit`}>Edit</Link>
-                                    <button type="button" className="link-danger" onClick={() => handleDelete(employee)}>
-                                        Delete
-                                    </button>
-                                </td>
+                <>
+                    <table className="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Job Title</th>
+                                <th>Manager</th>
+                                <th>Status</th>
+                                <th></th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {employees.map((employee) => (
+                                <tr key={employee.id}>
+                                    <td>
+                                        {employee.first_name} {employee.last_name}
+                                    </td>
+                                    <td>{employee.department?.name}</td>
+                                    <td>{employee.job_title}</td>
+                                    <td>
+                                        {employee.manager
+                                            ? `${employee.manager.first_name} ${employee.manager.last_name}`
+                                            : '—'}
+                                    </td>
+                                    <td>
+                                        <span className={`badge badge-${employee.status}`}>
+                                            {employee.status.replace('_', ' ')}
+                                        </span>
+                                    </td>
+                                    <td className="table-actions">
+                                        <Link to={`/employees/${employee.id}/edit`}>Edit</Link>
+                                        <button
+                                            type="button"
+                                            className="link-danger"
+                                            onClick={() => handleDelete(employee)}
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+
+                    {meta && meta.last_page > 1 && (
+                        <div className="pagination">
+                            <button
+                                type="button"
+                                className="btn-secondary btn"
+                                disabled={meta.current_page <= 1}
+                                onClick={() => setPage((current) => current - 1)}
+                            >
+                                Previous
+                            </button>
+                            <span>
+                                Page {meta.current_page} of {meta.last_page}
+                            </span>
+                            <button
+                                type="button"
+                                className="btn-secondary btn"
+                                disabled={meta.current_page >= meta.last_page}
+                                onClick={() => setPage((current) => current + 1)}
+                            >
+                                Next
+                            </button>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );

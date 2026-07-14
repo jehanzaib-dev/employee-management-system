@@ -37,7 +37,7 @@ export default function EmployeeForm() {
 
     useEffect(() => {
         fetchDepartments().then((response) => setDepartments(response.data));
-        fetchEmployees().then((response) => setEmployees(response.data));
+        fetchEmployees({ per_page: 100 }).then((response) => setEmployees(response.data.data));
     }, []);
 
     useEffect(() => {
