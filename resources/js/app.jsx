@@ -2,9 +2,12 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './bootstrap';
 import '../css/app.css';
+import AdminRoute from './components/AdminRoute';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
+import UserForm from './pages/Admin/UserForm';
+import UserList from './pages/Admin/UserList';
 import DepartmentForm from './pages/Departments/DepartmentForm';
 import DepartmentList from './pages/Departments/DepartmentList';
 import Dashboard from './pages/Dashboard';
@@ -27,6 +30,11 @@ function App() {
                             <Route path="/departments" element={<DepartmentList />} />
                             <Route path="/departments/new" element={<DepartmentForm />} />
                             <Route path="/departments/:id/edit" element={<DepartmentForm />} />
+                            <Route element={<AdminRoute />}>
+                                <Route path="/admin/users" element={<UserList />} />
+                                <Route path="/admin/users/new" element={<UserForm />} />
+                                <Route path="/admin/users/:id/edit" element={<UserForm />} />
+                            </Route>
                         </Route>
                     </Route>
                 </Routes>

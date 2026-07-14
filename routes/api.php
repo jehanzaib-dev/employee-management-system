@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
@@ -18,4 +19,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::apiResource('employees', EmployeeController::class);
     Route::post('employees/{employee}/photo', [EmployeeController::class, 'uploadPhoto']);
     Route::delete('employees/{employee}/photo', [EmployeeController::class, 'removePhoto']);
+
+    Route::middleware('role:admin')->prefix('admin')->group(function (): void {
+        Route::apiResource('users', UserController::class);
+    });
 });

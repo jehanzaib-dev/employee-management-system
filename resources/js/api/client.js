@@ -78,4 +78,24 @@ export async function removeEmployeePhoto(id) {
     return client.delete(`/api/employees/${id}/photo`);
 }
 
+export async function fetchUsers() {
+    return client.get('/api/admin/users');
+}
+
+export async function fetchUser(id) {
+    return client.get(`/api/admin/users/${id}`);
+}
+
+export async function createUser(user) {
+    return client.post('/api/admin/users', user);
+}
+
+export async function updateUser(id, user) {
+    return client.put(`/api/admin/users/${id}`, user);
+}
+
+export async function deleteUser(id) {
+    return client.delete(`/api/admin/users/${id}`);
+}
+
 export default client;
