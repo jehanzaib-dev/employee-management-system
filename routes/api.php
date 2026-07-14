@@ -16,6 +16,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('dashboard', [DashboardController::class, 'index']);
 
     Route::apiResource('departments', DepartmentController::class);
+    Route::get('employees/export', [EmployeeController::class, 'export']);
     Route::apiResource('employees', EmployeeController::class);
     Route::post('employees/{employee}/photo', [EmployeeController::class, 'uploadPhoto']);
     Route::delete('employees/{employee}/photo', [EmployeeController::class, 'removePhoto']);

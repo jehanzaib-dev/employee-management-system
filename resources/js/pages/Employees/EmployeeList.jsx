@@ -57,11 +57,19 @@ export default function EmployeeList() {
         <div className="card" style={{ marginTop: '1.5rem' }}>
             <div className="list-header">
                 <h1>Employees</h1>
-                {canWrite && (
-                    <Link to="/employees/new" className="btn">
-                        Add Employee
-                    </Link>
-                )}
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <a
+                        href={`/api/employees/export${search ? `?search=${encodeURIComponent(search)}` : ''}`}
+                        className="btn-secondary btn"
+                    >
+                        Export CSV
+                    </a>
+                    {canWrite && (
+                        <Link to="/employees/new" className="btn">
+                            Add Employee
+                        </Link>
+                    )}
+                </div>
             </div>
 
             {error && <div className="form-error">{error}</div>}
