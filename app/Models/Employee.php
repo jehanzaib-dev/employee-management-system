@@ -4,10 +4,12 @@ namespace App\Models;
 
 use App\Enums\EmployeeStatus;
 use Database\Factories\EmployeeFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Employee extends Model
 {
@@ -31,7 +33,13 @@ class Employee extends Model
         'hire_date',
         'salary',
         'status',
+        'photo_path',
     ];
+
+    /**
+     * @var list<string>
+     */
+    protected $appends = ['photo_url'];
 
     /**
      * Get the attributes that should be cast.
@@ -45,6 +53,13 @@ class Employee extends Model
             'salary' => 'decimal:2',
             'status' => EmployeeStatus::class,
         ];
+    }
+
+    protected function photoUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->photo_path ? Storage::disk('public')->url($this->photo_path) : null,
+        );
     }
 
     /**

@@ -5,7 +5,9 @@ import {
     fetchDepartments,
     fetchEmployee,
     fetchEmployees,
+    removeEmployeePhoto,
     updateEmployee,
+    uploadEmployeePhoto,
 } from '../../api/client';
 
 const STATUSES = ['active', 'on_leave', 'terminated'];
@@ -35,6 +37,12 @@ export default function EmployeeForm() {
     const [isLoading, setIsLoading] = useState(isEditing);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const [photoFile, setPhotoFile] = useState(null);
+    const [photoPreview, setPhotoPreview] = useState(null);
+    const [photoUrl, setPhotoUrl] = useState(null);
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+    const [photoError, setPhotoError] = useState('');
+
     useEffect(() => {
         fetchDepartments().then((response) => setDepartments(response.data));
         fetchEmployees({ per_page: 100 }).then((response) => setEmployees(response.data.data));
@@ -60,12 +68,71 @@ export default function EmployeeForm() {
                 salary: employee.salary,
                 status: employee.status,
             });
+            setPhotoUrl(employee.photo_url);
             setIsLoading(false);
         });
     }, [id, isEditing]);
 
+    useEffect(() => {
+        if (!photoPreview) {
+            return;
+        }
+
+        return () => URL.revokeObjectURL(photoPreview);
+    }, [photoPreview]);
+
     function handleChange(field) {
         return (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
+    }
+
+    async function handlePhotoChange(event) {
+        const file = event.target.files?.[0];
+
+        if (!file) {
+            return;
+        }
+
+        setPhotoError('');
+        setPhotoFile(file);
+        setPhotoPreview(URL.createObjectURL(file));
+
+        if (!isEditing) {
+            return;
+        }
+
+        setIsUploadingPhoto(true);
+
+        try {
+            const response = await uploadEmployeePhoto(id, file);
+            setPhotoUrl(response.data.photo_url);
+            setPhotoFile(null);
+        } catch (error) {
+            setPhotoError(error.response?.data?.errors?.photo?.[0] ?? 'Failed to upload photo.');
+        } finally {
+            setIsUploadingPhoto(false);
+        }
+    }
+
+    async function handleRemovePhoto() {
+        if (!isEditing) {
+            setPhotoFile(null);
+            setPhotoPreview(null);
+            return;
+        }
+
+        setIsUploadingPhoto(true);
+        setPhotoError('');
+
+        try {
+            await removeEmployeePhoto(id);
+            setPhotoUrl(null);
+            setPhotoFile(null);
+            setPhotoPreview(null);
+        } catch {
+            setPhotoError('Failed to remove photo.');
+        } finally {
+            setIsUploadingPhoto(false);
+        }
     }
 
     async function handleSubmit(event) {
@@ -84,7 +151,11 @@ export default function EmployeeForm() {
             if (isEditing) {
                 await updateEmployee(id, payload);
             } else {
-                await createEmployee(payload);
+                const response = await createEmployee(payload);
+
+                if (photoFile) {
+                    await uploadEmployeePhoto(response.data.id, photoFile);
+                }
             }
 
             navigate('/employees');
@@ -110,6 +181,41 @@ export default function EmployeeForm() {
     return (
         <div className="card" style={{ marginTop: '1.5rem', maxWidth: '640px' }}>
             <h1>{isEditing ? 'Edit Employee' : 'Add Employee'}</h1>
+
+            <div className="field">
+                <label>Photo</label>
+                <div className="photo-field">
+                    {photoPreview || photoUrl ? (
+                        <img src={photoPreview ?? photoUrl} alt="" className="avatar avatar-lg" />
+                    ) : (
+                        <span className="avatar avatar-lg avatar-placeholder">
+                            {form.first_name.charAt(0)}
+                            {form.last_name.charAt(0)}
+                        </span>
+                    )}
+
+                    <div>
+                        <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            onChange={handlePhotoChange}
+                            disabled={isUploadingPhoto}
+                        />
+                        {(photoPreview || photoUrl) && (
+                            <button
+                                type="button"
+                                className="link-danger"
+                                onClick={handleRemovePhoto}
+                                disabled={isUploadingPhoto}
+                            >
+                                Remove photo
+                            </button>
+                        )}
+                        {isUploadingPhoto && <p>Uploading…</p>}
+                    </div>
+                </div>
+                {photoError && <div className="field-error">{photoError}</div>}
+            </div>
 
             <form onSubmit={handleSubmit}>
                 <div className="field">

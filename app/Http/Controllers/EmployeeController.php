@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Employee\StoreEmployeeRequest;
 use App\Http\Requests\Employee\UpdateEmployeeRequest;
+use App\Http\Requests\Employee\UploadEmployeePhotoRequest;
 use App\Models\Employee;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class EmployeeController extends Controller
 {
@@ -51,8 +53,36 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee): JsonResponse
     {
+        if ($employee->photo_path) {
+            Storage::disk('public')->delete($employee->photo_path);
+        }
+
         $employee->delete();
 
         return response()->json(status: 204);
+    }
+
+    public function uploadPhoto(UploadEmployeePhotoRequest $request, Employee $employee): Employee
+    {
+        if ($employee->photo_path) {
+            Storage::disk('public')->delete($employee->photo_path);
+        }
+
+        $path = $request->file('photo')->store('employees', 'public');
+
+        $employee->update(['photo_path' => $path]);
+
+        return $employee->load(['department', 'manager']);
+    }
+
+    public function removePhoto(Employee $employee): Employee
+    {
+        if ($employee->photo_path) {
+            Storage::disk('public')->delete($employee->photo_path);
+        }
+
+        $employee->update(['photo_path' => null]);
+
+        return $employee->load(['department', 'manager']);
     }
 }

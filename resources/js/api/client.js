@@ -63,4 +63,15 @@ export async function deleteEmployee(id) {
     return client.delete(`/api/employees/${id}`);
 }
 
+export async function uploadEmployeePhoto(id, file) {
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    return client.post(`/api/employees/${id}/photo`, formData);
+}
+
+export async function removeEmployeePhoto(id) {
+    return client.delete(`/api/employees/${id}/photo`);
+}
+
 export default client;

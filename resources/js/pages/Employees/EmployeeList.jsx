@@ -89,7 +89,15 @@ export default function EmployeeList() {
                         <tbody>
                             {employees.map((employee) => (
                                 <tr key={employee.id}>
-                                    <td>
+                                    <td className="employee-name-cell">
+                                        {employee.photo_url ? (
+                                            <img src={employee.photo_url} alt="" className="avatar" />
+                                        ) : (
+                                            <span className="avatar avatar-placeholder">
+                                                {employee.first_name.charAt(0)}
+                                                {employee.last_name.charAt(0)}
+                                            </span>
+                                        )}
                                         {employee.first_name} {employee.last_name}
                                     </td>
                                     <td>{employee.department?.name}</td>
