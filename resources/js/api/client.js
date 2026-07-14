@@ -23,6 +23,10 @@ export async function fetchCurrentUser() {
     return client.get('/api/user');
 }
 
+export async function fetchDashboardStats() {
+    return client.get('/api/dashboard');
+}
+
 export async function fetchDepartments() {
     return client.get('/api/departments');
 }
