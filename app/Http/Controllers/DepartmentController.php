@@ -8,6 +8,7 @@ use App\Models\Department;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 
 class DepartmentController extends Controller
 {
@@ -21,6 +22,8 @@ class DepartmentController extends Controller
 
     public function store(StoreDepartmentRequest $request): JsonResponse
     {
+        Gate::authorize('create', Department::class);
+
         $department = Department::create($request->validated());
 
         return response()->json($department, 201);
@@ -33,6 +36,8 @@ class DepartmentController extends Controller
 
     public function update(UpdateDepartmentRequest $request, Department $department): Department
     {
+        Gate::authorize('update', $department);
+
         $department->update($request->validated());
 
         return $department;
@@ -40,6 +45,8 @@ class DepartmentController extends Controller
 
     public function destroy(Department $department): JsonResponse
     {
+        Gate::authorize('delete', $department);
+
         try {
             $department->delete();
         } catch (QueryException) {

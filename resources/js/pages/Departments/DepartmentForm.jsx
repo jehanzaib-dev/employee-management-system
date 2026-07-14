@@ -46,6 +46,8 @@ export default function DepartmentForm() {
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors ?? {});
+            } else if (error.response?.status === 403) {
+                setErrors({ name: ["You don't have permission to do this."] });
             } else {
                 setErrors({ name: ['Something went wrong. Please try again.'] });
             }

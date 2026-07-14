@@ -25,6 +25,27 @@ class DatabaseSeeder extends Seeder
             'role' => UserRole::Admin,
         ]);
 
+        User::factory()->create([
+            'name' => 'Hr User',
+            'email' => 'hr@ems.test',
+            'password' => 'password',
+            'role' => UserRole::Hr,
+        ]);
+
+        User::factory()->create([
+            'name' => 'Manager User',
+            'email' => 'manager@ems.test',
+            'password' => 'password',
+            'role' => UserRole::Manager,
+        ]);
+
+        User::factory()->create([
+            'name' => 'Employee User',
+            'email' => 'employee@ems.test',
+            'password' => 'password',
+            'role' => UserRole::Employee,
+        ]);
+
         Department::factory(5)->create()->each(function (Department $department): void {
             $employees = Employee::factory(5)->for($department)->create();
 

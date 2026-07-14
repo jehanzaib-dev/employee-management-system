@@ -9,6 +9,7 @@ use App\Models\Employee;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
 class EmployeeController extends Controller
@@ -34,6 +35,8 @@ class EmployeeController extends Controller
 
     public function store(StoreEmployeeRequest $request): JsonResponse
     {
+        Gate::authorize('create', Employee::class);
+
         $employee = Employee::create($request->validated());
 
         return response()->json($employee->load(['department', 'manager']), 201);
@@ -46,6 +49,8 @@ class EmployeeController extends Controller
 
     public function update(UpdateEmployeeRequest $request, Employee $employee): Employee
     {
+        Gate::authorize('update', $employee);
+
         $employee->update($request->validated());
 
         return $employee->load(['department', 'manager']);
@@ -53,6 +58,8 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee): JsonResponse
     {
+        Gate::authorize('delete', $employee);
+
         if ($employee->photo_path) {
             Storage::disk('public')->delete($employee->photo_path);
         }
@@ -64,6 +71,8 @@ class EmployeeController extends Controller
 
     public function uploadPhoto(UploadEmployeePhotoRequest $request, Employee $employee): Employee
     {
+        Gate::authorize('update', $employee);
+
         if ($employee->photo_path) {
             Storage::disk('public')->delete($employee->photo_path);
         }
@@ -77,6 +86,8 @@ class EmployeeController extends Controller
 
     public function removePhoto(Employee $employee): Employee
     {
+        Gate::authorize('update', $employee);
+
         if ($employee->photo_path) {
             Storage::disk('public')->delete($employee->photo_path);
         }

@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { deleteDepartment, fetchDepartments } from '../../api/client';
+import { useAuth } from '../../context/AuthContext';
 
 export default function DepartmentList() {
+    const { user } = useAuth();
+    const canWrite = user.role === 'admin' || user.role === 'hr';
+
     const [departments, setDepartments] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
@@ -39,9 +43,11 @@ export default function DepartmentList() {
         <div className="card" style={{ marginTop: '1.5rem' }}>
             <div className="list-header">
                 <h1>Departments</h1>
-                <Link to="/departments/new" className="btn">
-                    Add Department
-                </Link>
+                {canWrite && (
+                    <Link to="/departments/new" className="btn">
+                        Add Department
+                    </Link>
+                )}
             </div>
 
             {error && <div className="form-error">{error}</div>}
@@ -55,7 +61,7 @@ export default function DepartmentList() {
                             <th>Name</th>
                             <th>Description</th>
                             <th>Employees</th>
-                            <th></th>
+                            {canWrite && <th></th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -64,16 +70,18 @@ export default function DepartmentList() {
                                 <td>{department.name}</td>
                                 <td>{department.description}</td>
                                 <td>{department.employees_count}</td>
-                                <td className="table-actions">
-                                    <Link to={`/departments/${department.id}/edit`}>Edit</Link>
-                                    <button
-                                        type="button"
-                                        className="link-danger"
-                                        onClick={() => handleDelete(department)}
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
+                                {canWrite && (
+                                    <td className="table-actions">
+                                        <Link to={`/departments/${department.id}/edit`}>Edit</Link>
+                                        <button
+                                            type="button"
+                                            className="link-danger"
+                                            onClick={() => handleDelete(department)}
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

@@ -107,7 +107,11 @@ export default function EmployeeForm() {
             setPhotoUrl(response.data.photo_url);
             setPhotoFile(null);
         } catch (error) {
-            setPhotoError(error.response?.data?.errors?.photo?.[0] ?? 'Failed to upload photo.');
+            if (error.response?.status === 403) {
+                setPhotoError("You don't have permission to do this.");
+            } else {
+                setPhotoError(error.response?.data?.errors?.photo?.[0] ?? 'Failed to upload photo.');
+            }
         } finally {
             setIsUploadingPhoto(false);
         }
@@ -162,6 +166,8 @@ export default function EmployeeForm() {
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors ?? {});
+            } else if (error.response?.status === 403) {
+                setErrors({ email: ["You don't have permission to do this."] });
             } else {
                 setErrors({ email: ['Something went wrong. Please try again.'] });
             }
