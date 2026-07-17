@@ -24,4 +24,5 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::middleware('role:admin')->prefix('admin')->group(function (): void {
         Route::apiResource('users', UserController::class);
     });
-});
+}
+);
