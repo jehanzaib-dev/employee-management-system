@@ -54,6 +54,7 @@ class DatabaseSeeder extends Seeder
                     'manager_id' => $employees->except($employee->id)->random()->id,
                 ])
             );
-        });
+        }
+        );
     }
 }
